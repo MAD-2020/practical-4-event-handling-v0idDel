@@ -22,15 +22,25 @@ public class MainActivity extends AppCompatActivity {
         - The function nextLevel() launches the new advanced page.
         - Feel free to modify the function to suit your program.
     */
+    private static final String TAG = "message";
+    private int Score = 0;
+    private TextView scoreTrack;
+    private Button Button1;
+    private Button Button2;
+    private Button Button3;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //Capture buttons from layout
+        Button1 = (Button) findViewById(R.id.Button1);
+        Button2 = (Button) findViewById(R.id.Button2);
+        Button3 = (Button) findViewById(R.id.Button3);
+        scoreTrack = (TextView) findViewById(R.id.score);
 
+        Log.v(TAG, "Whack-A-Mole!");
         Log.v(TAG, "Finished Pre-Initialisation!");
-
-
     }
     @Override
     protected void onStart(){
@@ -51,10 +61,45 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    private void doCheck(Button checkButton) {
+    public void onClickButton(View v){
         /* Checks for hit or miss and if user qualify for advanced page.
-            Triggers nextLevelQuery().
-         */
+            Triggers nextLevelQuery().*/
+        Button userButton = (Button) v;
+        switch(v.getId()){
+            case R.id.Button1:
+                Log.v(TAG, "Button Left Clicked!");
+                break;
+            case R.id.Button2:
+                Log.v(TAG, "Button Middle Clicked!");
+                break;
+            case R.id.Button3:
+                Log.v(TAG, "Button Right Clicked!");
+                break;
+        }
+        String buttonText = userButton.getText().toString();
+        switch (buttonText){
+            case "O":
+                Log.v(TAG, "Missed point deducted!");
+                Score = Score - 1;
+                if (Score < 0){
+                    Score = 0;
+                    Log.v(TAG, "Come on! Try harder!");
+                }
+                setNewMole();
+                break;
+            case "*":
+                Log.v(TAG, "Hit, score added!");
+                Score = Score + 1;
+                setNewMole();
+                break;
+        }
+        String count = String.valueOf(Score);
+        scoreTrack.setText(count);
+
+        if (Score > 0 && Score % 10 == 0)
+        {
+            nextLevelQuery();
+        }
     }
 
     private void nextLevelQuery(){
@@ -64,14 +109,48 @@ public class MainActivity extends AppCompatActivity {
         Log.v(TAG, "User decline!");
         Log.v(TAG, "Advance option given to user!");
         belongs here*/
+        Log.v(TAG, "Advance option given to user!");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Warning! Insane Whack-A-Mole incoming!");
+        builder.setMessage("Would you like to advance to advanced mode?").setCancelable(false);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.v(TAG, "User accepts!");
+                nextLevel();
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                Log.v(TAG, "User decline!");
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     private void nextLevel(){
         /* Launch advanced page */
+        Intent nextPage = new Intent(MainActivity.this, Main2Activity.class);
+        Bundle extras = new Bundle();
+        extras.putInt("Score", Score);
+        nextPage.putExtras(extras);
+        startActivity(nextPage);
     }
 
     private void setNewMole() {
+        Button[] buttonArray = {Button1, Button2, Button3};
         Random ran = new Random();
         int randomLocation = ran.nextInt(3);
+        //Android studio suggested me to change from for loop to foreach loop
+        for (Button button : buttonArray) {
+            Button moleButton = buttonArray[randomLocation];
+            if (button == moleButton) {
+                button.setText("*");
+            } else {
+                button.setText("O");
+            }
+        }
     }
 }
